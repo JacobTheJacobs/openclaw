@@ -92,7 +92,9 @@ function createSpawnOptions(cmd, args, envOverride) {
 function run(cmd, args) {
   let child;
   try {
-    child = spawn(cmd, args, createSpawnOptions(cmd, args));
+    const options = createSpawnOptions(cmd, args);
+    const executable = options.shell && cmd.includes(" ") ? `"${cmd}"` : cmd;
+    child = spawn(executable, args, options);
   } catch (err) {
     console.error(`Failed to launch ${cmd}:`, err);
     process.exit(1);
@@ -113,7 +115,10 @@ function run(cmd, args) {
 function runSync(cmd, args, envOverride) {
   let result;
   try {
-    result = spawnSync(cmd, args, createSpawnOptions(cmd, args, envOverride));
+    const options = createSpawnOptions(cmd, args, envOverride);
+    // On Windows with shell:true, if the command path has spaces, it must be quoted.
+    const executable = options.shell && cmd.includes(" ") ? `"${cmd}"` : cmd;
+    result = spawnSync(executable, args, options);
   } catch (err) {
     console.error(`Failed to launch ${cmd}:`, err);
     process.exit(1);
